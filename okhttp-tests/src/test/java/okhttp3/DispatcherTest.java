@@ -1,27 +1,19 @@
 package okhttp3;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.RealCall.AsyncCall;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static okhttp3.TestUtil.defaultClient;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public final class DispatcherTest {
   RecordingExecutor executor = new RecordingExecutor();
@@ -82,7 +74,7 @@ public final class DispatcherTest {
     client.newCall(newRequest("http://a/2")).enqueue(callback);
     client.newCall(newRequest("http://b/2")).enqueue(callback);
     dispatcher.setMaxRequests(4);
-    executor.assertJobs("http://a/1", "http://b/1", "http://c/1", "http://a/2");
+    executor.assertJobs("http://a/1", "http://b/1", "http://b/2", "http://a/2");
   }
 
   @Test public void increasingMaxPerHostPromotesJobsImmediately() throws Exception {
@@ -93,7 +85,7 @@ public final class DispatcherTest {
     client.newCall(newRequest("http://a/4")).enqueue(callback);
     client.newCall(newRequest("http://a/5")).enqueue(callback);
     dispatcher.setMaxRequestsPerHost(4);
-    executor.assertJobs("http://a/1", "http://a/2", "http://a/3", "http://a/4");
+    executor.assertJobs("http://a/1", "http://a/2", "http://a/5", "http://a/4");
   }
 
   @Test public void oldJobFinishesNewJobCanRunDifferentHost() throws Exception {
